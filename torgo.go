@@ -35,8 +35,8 @@ type Torrent struct {
 	DisplayName string
 	Hash        string
 	Size        int64
-	Xt 			string
-	Addr 		string
+	Xt string
+	Addr string
 
 	Creation    float64
 	PieceLen    int
