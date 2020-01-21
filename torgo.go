@@ -1,16 +1,28 @@
 package torgo
 
-import "fmt"
+import (
+	"errors"
+	"strings"
+)
 
-func Hello() {
-	fmt.Println("Hello, World!")
+func Parse(uri string) (error, *Torrent) {
+
+	if !strings.Contains(uri, "magnet:?") {
+		return errors.New("invalid magnet uri"), nil
+	}
+
+	return nil, nil
 }
 
 type Torrent struct {
-	Hash     string
-	Len      int64
-	Name     string
-	Creation float64
-	PieceLen int
-	Pieces   int
+	Origin 		string
+	DisplayName string
+	Hash        string
+	Size        int64
+	Xt 			string
+	Addr 		string
+
+	Creation    float64
+	PieceLen    int
+	Pieces      int
 }
