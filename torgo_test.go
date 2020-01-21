@@ -24,7 +24,8 @@ func TestParseMagnetUri(t *testing.T) {
 	is.NoErr(err)
 
 	//assert tor fields.
+	is.Equal(tor.Origin, url)
 	is.Equal(tor.Xt, "urn:btih:0678589e05f322707fc82546af38040ebe8af963")
 	is.Equal(tor.DisplayName, "Trailblazers.UK.S01E11.Of.Madchester.HDTV.x264-LiNKLE%5Beztv%5D.mkv%5Beztv%5D")
-
+	is.Equal(tor.Addr, "udp%3A%2F%2Fexodus.desync.com%3A6969")
 }
