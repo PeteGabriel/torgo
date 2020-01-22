@@ -31,12 +31,12 @@ func Parse(uri string) (error, *Torrent) {
 }
 
 type Torrent struct {
-	Origin      string
-	DisplayName string
-	Hash        string
-	Size        int64
-	Xt          string
-	Addr        string
+	Origin      string //original uri
+	DisplayName string //dn
+	Hash        string //info hash
+	Size        int64  // size in bytes
+	Xt          string // exact topic
+	Addr        string //tr
 
 	Creation float64
 	PieceLen int
