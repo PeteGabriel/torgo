@@ -39,7 +39,6 @@ func TestParseMagnetUri(t *testing.T) {
 	is.Equal(tor.Trackers[5], "wss://tracker.btorrent.xyz")
 	is.Equal(tor.Trackers[6], "wss://tracker.fastcast.nz")
 	is.Equal(tor.Trackers[7], "wss://tracker.openwebtorrent.com")
-
+	is.Equal(tor.Seed, "https://webtorrent.io/torrents/")
 	is.Equal(tor.Hash, "c9e15763f722f23e98a29decdfae341b98d53056")
-
 }
