@@ -16,8 +16,7 @@ const (
 	ExactLength = "xl"
 )
 
-
-func Parse(magnetUri string) (error, *Magnet) {
+func (m *Magnet) Parse(magnetUri string) (error, *Magnet) {
 
 	suf := "magnet:?"
 	if !strings.Contains(magnetUri, suf) {
@@ -39,7 +38,7 @@ func Parse(magnetUri string) (error, *Magnet) {
 			trs = append(trs, decode(tmp[1]))
 		} else if tmp[0] == ExactTopic {
 			ih := strings.Split(tmp[1], ":")
-			h = ih[len(ih) -1]
+			h = ih[len(ih)-1]
 			parts[ExactTopic] = decode(tmp[1])
 		} else {
 			parts[tmp[0]] = decode(tmp[1])
@@ -47,17 +46,16 @@ func Parse(magnetUri string) (error, *Magnet) {
 	}
 
 	//parse TR links
+	m.Origin = magnetUri
+	m.Xt = parts[ExactTopic]
+	m.DisplayName = parts[DisplayName]
+	m.Trackers = trs
+	m.Source = parts[ExactSource]
+	m.Hash = h
+	m.Seed = parts[WebSeed]
+	m.Size = convert(parts[ExactLength])
 
-	return nil, &Magnet{
-		Origin:      magnetUri,
-		Xt:          parts[ExactTopic],
-		DisplayName: parts[DisplayName],
-		Trackers:    trs,
-		Source:      parts[ExactSource],
-		Hash:        h,
-		Seed:        parts[WebSeed],
-		Size:        convert(parts[ExactLength]),
-	}
+	return nil, m
 }
 
 func decode(src string) string {
@@ -77,7 +75,6 @@ func convert(src string) int {
 		return i
 	}
 }
-
 
 type Magnet struct {
 	Origin      string   //original uri
