@@ -1,6 +1,8 @@
 package torgo
 
 import (
+	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -18,6 +20,11 @@ func TestParseTorrentUri(t *testing.T) {
 
 	is.NoErr(err)
 	is.Equal(tor.Announce, "udp://tracker.leechers-paradise.org:6969")
+	is.Equal(tor.Name, "Cosmos Laundromat")
+	var ih string = fmt.Sprintf("%x", tor.InfoHash[:])
+	is.True(ih == "0e6d3306f0d3826736854865771a26798b68b4eb")
+	is.Equal(tor.PieceLength, 262144)
+	is.Equal(tor.Length, 0)
 }
 
 func TestParseOfInvalidTorrentUri(t *testing.T) {
@@ -25,12 +32,13 @@ func TestParseOfInvalidTorrentUri(t *testing.T) {
 	err, _ := ParseTorrent(torrent)
 
 	is.True(err != nil)
+	os.Remove("./../cosmos-laundromat.torrent")
 }
 
 func TestParseOfInvalidMagnetUri(t *testing.T) {
 	is := is.New(t)
 	uri := strings.Replace(magnet, "magnet:?", "", 1)
-	err, _ := ParseMagnet(uri)
+	_, err := ParseMagnet(uri)
 
 	is.True(err != nil)
 }
@@ -39,7 +47,7 @@ func TestParseMagnetUri(t *testing.T) {
 
 	is := is.New(t)
 
-	err, tor := ParseMagnet(magnet)
+	tor, err := ParseMagnet(magnet)
 
 	is.NoErr(err)
 

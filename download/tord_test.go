@@ -15,5 +15,6 @@ func TestDownloadOfTorFile(t *testing.T) {
 
 	_, err = os.Stat("./../cosmos-laundromat.torrent")
 	is.NoErr(err)
-
+	//clean env
+	os.Remove("./../cosmos-laundromat.torrent")
 }

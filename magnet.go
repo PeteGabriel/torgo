@@ -16,15 +16,16 @@ const (
 	ExactLength = "xl"
 )
 
-func (m *Magnet) Parse(magnetUri string) (error, *Magnet) {
+//Parse a magnet uri into a magnet struct
+func (m *Magnet) Parse(uri string) (*Magnet, error) {
 
 	suf := "magnet:?"
-	if !strings.Contains(magnetUri, suf) {
-		return errors.New("invalid magnet magnetUri"), nil
+	if !strings.Contains(uri, suf) {
+		return nil, errors.New("invalid magnet magnetUri")
 	}
 
 	//remove suffix
-	ur := strings.Replace(magnetUri, suf, "", len(suf))
+	ur := strings.Replace(uri, suf, "", len(suf))
 
 	parts := make(map[string]string)
 	trs := make([]string, 0)
@@ -46,7 +47,7 @@ func (m *Magnet) Parse(magnetUri string) (error, *Magnet) {
 	}
 
 	//parse TR links
-	m.Origin = magnetUri
+	m.Origin = uri
 	m.Xt = parts[ExactTopic]
 	m.DisplayName = parts[DisplayName]
 	m.Trackers = trs
@@ -55,7 +56,7 @@ func (m *Magnet) Parse(magnetUri string) (error, *Magnet) {
 	m.Seed = parts[WebSeed]
 	m.Size = convert(parts[ExactLength])
 
-	return nil, m
+	return m, nil
 }
 
 func decode(src string) string {
@@ -76,6 +77,7 @@ func convert(src string) int {
 	}
 }
 
+//A Magnet represent the info present in a magnet URI.
 type Magnet struct {
 	Origin      string   //original uri
 	DisplayName string   //dn

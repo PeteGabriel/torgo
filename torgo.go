@@ -8,17 +8,17 @@ import (
 	"github.com/petegabriel/torgo/download"
 )
 
-func ParseMagnet(magnetUri string) (error, *Magnet) {
+//ParseMagnet parses a magnet uri
+func ParseMagnet(uri string) (*Magnet, error) {
 	m := new(Magnet)
-	return m.Parse(magnetUri)
+	return m.Parse(uri)
 }
 
-// ParseTorrent
+// ParseTorrent parses a .torrent url
 func ParseTorrent(fp string) (*Torrent, error) {
 	t := new(Torrent)
 	//download file
-	err := download.Download(fp)
-	if err != nil {
+	if err := download.Download(fp); err != nil {
 		return nil, err
 	}
 
