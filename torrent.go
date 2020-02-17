@@ -20,6 +20,7 @@ func (*Torrent) Parse(r io.Reader) (*Torrent, error) {
 	return t.toTorrentFile()
 }
 
+
 //Torrent represents the info present in  a.torrent file
 type Torrent struct {
 	Announce    string
