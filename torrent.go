@@ -2,21 +2,31 @@ package torgo
 
 import (
 	"bytes"
+	"crypto/rand"
 	"crypto/sha1"
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jackpal/bencode-go"
 	"github.com/petegabriel/torgo/download"
+
 )
 
 
+const Port = 6881
+
 
 func (t *Torrent) Download() error {
+
+
+
 	return nil
 }
 
@@ -45,7 +55,6 @@ func (t *Torrent) Parse(loc string) (Downloadable, error){
 	if paths := strings.Split(link.Path, "/"); len(paths) > 0 {
 		fn = paths[len(paths)-1]
 	}
-
 	f, err = os.Open("./../" + fn)
 	if err != nil {
 		log.Printf("error opening file: %s", err.Error())
@@ -54,6 +63,58 @@ func (t *Torrent) Parse(loc string) (Downloadable, error){
 	return t.parseReader(f)
 }
 
+func (t *Torrent) requestPeers() ([]peers.Peer, error) {
+	var peerId [20]byte
+	_, err := rand.Read(peerId[:])
+	if err != nil {
+		return nil, err
+	}
+
+	tu, err := t.getUrlTracker(peerId[:], Port)
+	if err != nil {
+		fmt.Print(err.Error())
+		return nil, err
+	}
+
+	c := &http.Client{Timeout: 15 * time.Second}
+	resp, err := c.Get(tu)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	tracker := tracker{}
+	err = bencode.Unmarshal(resp.Body, &tracker)
+	if err != nil {
+		return nil, err
+	}
+
+
+
+	return nil, nil
+}
+
+//peerId identifies us when meeting the tracker.
+func (t *Torrent) getUrlTracker(peerId []byte, port int) (string, error) {
+	u, err := url.Parse(t.Announce)
+	if err != nil {
+
+	}
+
+	//extra query params
+	params := url.Values{
+		"info_hash":  []string{string(t.InfoHash[:])},
+		"peer_id":    []string{string(peerId[:])},
+		"port":       []string{strconv.Itoa(int(port))},
+		"uploaded":   []string{"0"},
+		"downloaded": []string{"0"},
+		"compact":    []string{"1"},
+		"left":       []string{strconv.Itoa(t.Length)},
+	}
+	u.RawQuery = params.Encode()
+
+	return u.String(), nil
+}
 
 //Parse a .torrent file
 func (*Torrent) parseReader(r io.Reader) (*Torrent, error) {
@@ -140,4 +201,9 @@ type info struct {
 	PieceLength int    `bencode:"piece length"`
 	Length      int    `bencode:"length"`
 	Name        string `bencode:"name"`
+}
+
+type tracker struct {
+	Interval int    `bencode:"interval"`
+	Peers    string `bencode:"peers"`
 }
