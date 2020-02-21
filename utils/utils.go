@@ -1,4 +1,4 @@
-package download
+package utils
 
 import (
 	"errors"
@@ -10,18 +10,20 @@ import (
 )
 
 /*
-Download torrent file from url.
+DownTorFile .torrent file from url into the local file system.
+This is not the actual download of the file behind the torrent file.
+
 The local file will assume the last element of the
 segment path as its name.
 */
-func Download(url string) error {
+func DownTorFile(url string) error {
 
 	fn, err := parseName(url)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	//Try to download
+	//Try to utils
 	r, err := http.Get(url)
 	if err != nil {
 		log.Println(err)

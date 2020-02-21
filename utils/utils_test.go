@@ -1,4 +1,4 @@
-package download
+package utils
 
 import (
 	"os"
@@ -10,7 +10,7 @@ import (
 func TestDownloadOfTorFile(t *testing.T) {
 	is := is.New(t)
 	p := "https://webtorrent.io/torrents/cosmos-laundromat.torrent"
-	err := Download(p)
+	err := DownTorFile(p)
 	is.NoErr(err)
 
 	_, err = os.Stat("./../cosmos-laundromat.torrent")

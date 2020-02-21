@@ -43,7 +43,7 @@ type Parselable interface {
 	Parse(loc string) (Downloadable, error)
 }
 
-//Downloadable represents a type that can perform the download operation
+//Downloadable represents a type that can perform the utils operation
 type Downloadable interface {
 	Download() error
 }

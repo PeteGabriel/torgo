@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -16,7 +17,7 @@ import (
 
 	"github.com/jackpal/bencode-go"
 	"github.com/petegabriel/torgo/download"
-
+	"github.com/petegabriel/torgo/peers"
 )
 
 
@@ -24,10 +25,45 @@ const Port = 6881
 
 
 func (t *Torrent) Download() error {
+	var peerId [20]byte
+	_, err := rand.Read(peerId[:])
+	if err != nil {
+		return err
+	}
 
+	peers, err := t.requestPeers(peerId[:])
+	if err != nil {
+		fmt.Println("Cannot request peers ")
+		return err
+	}
+
+	t.Peers = peers
+	t.PeerID = peerId[:]
+
+	//TODO t.downloadFromPeers()
 
 
 	return nil
+}
+
+/**
+1. Start a TCP connection with the peer
+2. Complete a two-way BitTorrent handshake
+3. Ask to utils pieces
+ */
+func (t *Torrent) downloadFromPeers() error {
+
+	for _, p := range t.Peers{
+		conn, err := net.DialTimeout("tcp", p.String(), 3*time.Second)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+
+		break
+	}
+
+	return nil
+
 }
 
 func (t *Torrent) Parse(loc string) (Downloadable, error){
@@ -39,7 +75,7 @@ func (t *Torrent) Parse(loc string) (Downloadable, error){
 		return t.parseReader(f)
 	}
 
-	//download file
+	//utils file
 	if err := download.Download(loc); err != nil {
 		log.Printf("error downloading file: %s", err.Error())
 		return nil, err
@@ -63,12 +99,7 @@ func (t *Torrent) Parse(loc string) (Downloadable, error){
 	return t.parseReader(f)
 }
 
-func (t *Torrent) requestPeers() ([]peers.Peer, error) {
-	var peerId [20]byte
-	_, err := rand.Read(peerId[:])
-	if err != nil {
-		return nil, err
-	}
+func (t *Torrent) requestPeers(peerId []byte) ([]peers.Peer, error) {
 
 	tu, err := t.getUrlTracker(peerId[:], Port)
 	if err != nil {
@@ -89,9 +120,7 @@ func (t *Torrent) requestPeers() ([]peers.Peer, error) {
 		return nil, err
 	}
 
-
-
-	return nil, nil
+	return peers.Unmarshal([]byte(tracker.Peers))
 }
 
 //peerId identifies us when meeting the tracker.
@@ -130,6 +159,8 @@ func (*Torrent) parseReader(r io.Reader) (*Torrent, error) {
 
 //Torrent represents the info present in  a.torrent file
 type Torrent struct {
+	Peers       []peers.Peer
+	PeerID      []byte
 	Announce    string
 	InfoHash    [20]byte //hash from info struct
 	PieceHashes [][20]byte
