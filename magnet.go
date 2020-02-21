@@ -16,6 +16,10 @@ const (
 	ExactLength = "xl"
 )
 
+func (t *Magnet) Download() error {
+	return nil
+}
+
 //Parse a magnet uri into a magnet struct
 func (m *Magnet) Parse(uri string) (*Magnet, error) {
 

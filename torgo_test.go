@@ -16,7 +16,9 @@ const (
 
 func TestParseTorrentFile(t *testing.T) {
 	is := is.New(t)
-	tor, err := ParseTorrent("./resources/MPH.pdf.torrent")
+	tt, err := Parse("./resources/MPH.pdf.torrent")
+
+	tor := tt.(*Torrent)
 
 	is.NoErr(err)
 	is.Equal(tor.Announce, "https://academictorrents.com/announce.php")
@@ -30,7 +32,9 @@ func TestParseTorrentFile(t *testing.T) {
 
 func TestParseTorrentUri(t *testing.T) {
 	is := is.New(t)
-	tor, err := ParseTorrent(torrent)
+	tt, err := Parse(torrent)
+
+	tor := tt.(*Torrent)
 
 	is.NoErr(err)
 	is.Equal(tor.Announce, "udp://tracker.leechers-paradise.org:6969")
@@ -43,7 +47,7 @@ func TestParseTorrentUri(t *testing.T) {
 
 func TestParseOfInvalidTorrentUri(t *testing.T) {
 	is := is.New(t)
-	err, _ := ParseTorrent(torrent)
+	err, _ := Parse(torrent)
 
 	is.True(err != nil)
 	os.Remove("./../cosmos-laundromat.torrent")
@@ -52,7 +56,7 @@ func TestParseOfInvalidTorrentUri(t *testing.T) {
 func TestParseOfInvalidMagnetUri(t *testing.T) {
 	is := is.New(t)
 	uri := strings.Replace(magnet, "magnet:?", "", 1)
-	_, err := ParseMagnet(uri)
+	_, err := Parse(uri)
 
 	is.True(err != nil)
 }
@@ -61,25 +65,27 @@ func TestParseMagnetUri(t *testing.T) {
 
 	is := is.New(t)
 
-	tor, err := ParseMagnet(magnet)
+	m, err := Parse(magnet)
+
+	mag := m.(*Magnet)
 
 	is.NoErr(err)
 
 	//assert tor fields.
-	is.Equal(tor.Origin, magnet)
-	is.Equal(tor.Xt, "urn:btih:c9e15763f722f23e98a29decdfae341b98d53056")
-	is.Equal(tor.DisplayName, "Cosmos Laundromat")
-	is.Equal(tor.Source, "https://webtorrent.io/torrents/cosmos-laundromat.torrent")
+	is.Equal(mag.Origin, magnet)
+	is.Equal(mag.Xt, "urn:btih:c9e15763f722f23e98a29decdfae341b98d53056")
+	is.Equal(mag.DisplayName, "Cosmos Laundromat")
+	is.Equal(mag.Source, "https://webtorrent.io/torrents/cosmos-laundromat.torrent")
 
-	is.Equal(len(tor.Trackers), 8)
-	is.Equal(tor.Trackers[0], "udp://explodie.org:6969")
-	is.Equal(tor.Trackers[1], "udp://tracker.coppersurfer.tk:6969")
-	is.Equal(tor.Trackers[2], "udp://tracker.empire-js.us:1337")
-	is.Equal(tor.Trackers[3], "udp://tracker.leechers-paradise.org:6969")
-	is.Equal(tor.Trackers[4], "udp://tracker.opentrackr.org:1337")
-	is.Equal(tor.Trackers[5], "wss://tracker.btorrent.xyz")
-	is.Equal(tor.Trackers[6], "wss://tracker.fastcast.nz")
-	is.Equal(tor.Trackers[7], "wss://tracker.openwebtorrent.com")
-	is.Equal(tor.Seed, "https://webtorrent.io/torrents/")
-	is.Equal(tor.Hash, "c9e15763f722f23e98a29decdfae341b98d53056")
+	is.Equal(len(mag.Trackers), 8)
+	is.Equal(mag.Trackers[0], "udp://explodie.org:6969")
+	is.Equal(mag.Trackers[1], "udp://tracker.coppersurfer.tk:6969")
+	is.Equal(mag.Trackers[2], "udp://tracker.empire-js.us:1337")
+	is.Equal(mag.Trackers[3], "udp://tracker.leechers-paradise.org:6969")
+	is.Equal(mag.Trackers[4], "udp://tracker.opentrackr.org:1337")
+	is.Equal(mag.Trackers[5], "wss://tracker.btorrent.xyz")
+	is.Equal(mag.Trackers[6], "wss://tracker.fastcast.nz")
+	is.Equal(mag.Trackers[7], "wss://tracker.openwebtorrent.com")
+	is.Equal(mag.Seed, "https://webtorrent.io/torrents/")
+	is.Equal(mag.Hash, "c9e15763f722f23e98a29decdfae341b98d53056")
 }

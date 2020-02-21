@@ -5,12 +5,58 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"io"
+	"log"
+	"net/url"
+	"os"
+	"strings"
 
 	"github.com/jackpal/bencode-go"
+	"github.com/petegabriel/torgo/download"
 )
 
+
+
+func (t *Torrent) Download() error {
+	return nil
+}
+
+func (t *Torrent) Parse(loc string) (Downloadable, error){
+	//Check if file exists locally
+	f, err := os.Open(loc)
+	if err != nil {
+		log.Print("File not found locally.")
+	}else {
+		return t.parseReader(f)
+	}
+
+	//download file
+	if err := download.Download(loc); err != nil {
+		log.Printf("error downloading file: %s", err.Error())
+		return nil, err
+	}
+
+	link, err := url.Parse(loc)
+	if err != nil {
+		log.Printf("error parsing .torrent url: %s", err.Error())
+		return nil, err
+	}
+
+	var fn string
+	if paths := strings.Split(link.Path, "/"); len(paths) > 0 {
+		fn = paths[len(paths)-1]
+	}
+
+	f, err = os.Open("./../" + fn)
+	if err != nil {
+		log.Printf("error opening file: %s", err.Error())
+		return nil, err
+	}
+	return t.parseReader(f)
+}
+
+
 //Parse a .torrent file
-func (*Torrent) Parse(r io.Reader) (*Torrent, error) {
+func (*Torrent) parseReader(r io.Reader) (*Torrent, error) {
 	t := &tor{}
 	err := bencode.Unmarshal(r, &t)
 	if err != nil {
