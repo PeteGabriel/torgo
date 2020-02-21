@@ -14,6 +14,10 @@ func Download(t Downloadable, path string) error {
 	return nil
 }
 
+/**
+Parse a magnet link or a .torrent file.
+The .torrent file can be via url or a local file.
+ */
 func Parse(loc string) (Downloadable, error) {
 	suf := "magnet:?"
 	if strings.Contains(loc, suf) {
@@ -34,10 +38,12 @@ func Parse(loc string) (Downloadable, error) {
 	return d, err
 }
 
+//Parselable represents a type that can perform the parse operation
 type Parselable interface {
 	Parse(loc string) (Downloadable, error)
 }
 
+//Downloadable represents a type that can perform the download operation
 type Downloadable interface {
 	Download() error
 }
