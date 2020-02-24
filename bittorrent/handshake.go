@@ -1,5 +1,9 @@
 package bittorrent
 
+import (
+	"io"
+)
+
 /**
 Serialize the handshake structure into an array of bytes.
 
@@ -20,12 +24,11 @@ func (h *Handshake) Serialize() []byte {
 	idx += copy(buf[idx:], make([]byte, 8))
 	idx += copy(buf[idx:], h.InfoHash[:])
 	idx += copy(buf[idx:], h.PeerID[:])
-
 	return buf
 }
 
 //Deserialize into an handshake structure.
-func Deserialize() (*Handshake, error) {
+func Deserialize(r io.Reader) (*Handshake, error) {
 
 	return nil, nil
 }
@@ -33,11 +36,11 @@ func Deserialize() (*Handshake, error) {
 // Handshake represent the tcp handshake between us and the tracker.
 type Handshake struct {
 	Pstr     string //protocol identifier which is always BitTorrent protocol
-	InfoHash [20]byte
-	PeerID   [20]byte //identify ourselves
+	InfoHash []byte
+	PeerID   []byte //identify ourselves
 }
 
-func NewHandshake(infoHash, peerID [20]byte) *Handshake {
+func NewHandshake(infoHash, peerID []byte) *Handshake {
 	return &Handshake{
 		Pstr: "BitTorrent protocol",
 		InfoHash: infoHash,
