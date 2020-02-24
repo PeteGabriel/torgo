@@ -1,6 +1,7 @@
 package bittorrent
 
 import (
+	"fmt"
 	"io"
 )
 
@@ -29,8 +30,21 @@ func (h *Handshake) Serialize() []byte {
 
 //Deserialize into an handshake structure.
 func Deserialize(r io.Reader) (*Handshake, error) {
+	knownBytes := 68
+	buf := make([]byte, knownBytes)
+	_, err := r.Read(buf)
+	if err != nil {
+	    fmt.Println(err)
+		return nil, err
+	}
 
-	return nil, nil
+	hs := &Handshake{
+		Pstr:     string(buf[1:20]),
+		InfoHash: buf[28:48],
+		PeerID:   buf[48:],
+	}
+
+	return hs, nil
 }
 
 // Handshake represent the tcp handshake between us and the tracker.
