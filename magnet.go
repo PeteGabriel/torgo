@@ -2,6 +2,7 @@ package torgo
 
 import (
 	"errors"
+	"log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -65,7 +66,7 @@ func (m *Magnet) Parse(uri string) (*Magnet, error) {
 
 func decode(src string) string {
 	if s, err := url.QueryUnescape(src); err != nil {
-		//TODO log error
+		log.Println(err.Error())
 		return ""
 	} else {
 		return s
@@ -74,7 +75,7 @@ func decode(src string) string {
 
 func convert(src string) int {
 	if i, err := strconv.Atoi(src); err != nil {
-		//TODO log error
+		log.Println(err.Error())
 		return -1
 	} else {
 		return i

@@ -11,8 +11,8 @@ Serialize the handshake structure into an array of bytes.
 1. The length of the protocol identifier, which is always 19              -> 1 byte
 2. The name of the protocol (BitTorrent protocol)
 3. Eight reserved bytes, all set to 0                                     -> 8 bytes
-4. The infohash that we calculated earlier to identify which file we want -> 20 bytes
-5. The Peer ID that we made up to identify ourselves                      -> 20 bytes
+4. The infohash to identify which file we want -> 20 bytes
+5. The Peer ID to identify ourselves                      -> 20 bytes
                                                                              49 bytes
 */
 func (h *Handshake) Serialize() []byte {
@@ -32,7 +32,7 @@ func (h *Handshake) Serialize() []byte {
 func Deserialize(r io.Reader) (*Handshake, error) {
 	knownBytes := 68
 	buf := make([]byte, knownBytes)
-	_, err := r.Read(buf)
+	_, err := io.ReadFull(r, buf)
 	if err != nil {
 	    fmt.Println(err)
 		return nil, err

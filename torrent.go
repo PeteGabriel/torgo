@@ -16,8 +16,9 @@ import (
 	"time"
 
 	"github.com/jackpal/bencode-go"
-	"github.com/petegabriel/torgo/download"
+	"github.com/petegabriel/torgo/bittorrent"
 	"github.com/petegabriel/torgo/peers"
+	"github.com/petegabriel/torgo/utils"
 )
 
 
@@ -40,8 +41,7 @@ func (t *Torrent) Download() error {
 	t.Peers = peers
 	t.PeerID = peerId[:]
 
-	//TODO t.downloadFromPeers()
-
+	t.downloadFromPeers()
 
 	return nil
 }
@@ -51,18 +51,32 @@ func (t *Torrent) Download() error {
 2. Complete a two-way BitTorrent handshake
 3. Ask to utils pieces
  */
-func (t *Torrent) downloadFromPeers() error {
+func (t *Torrent) downloadFromPeers() {
 
 	for _, p := range t.Peers{
-		conn, err := net.DialTimeout("tcp", p.String(), 3*time.Second)
+		con, err := net.DialTimeout("tcp", p.String(), 5*time.Second)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
+		if con != nil {
+			defer con.Close()
+		}
 
-		break
+		hs := bittorrent.NewHandshake(t.InfoHash[:], t.PeerID)
+		_, err = con.Write(hs.Serialize())
+		if err != nil {
+			log.Printf("Could not handshake with %s. Disconnecting\n", p.IP)
+			return
+		}
+
+		hsr, err := bittorrent.Deserialize(con)
+		if err != nil {
+			log.Printf("Could not handshake with %s. Disconnecting\n", p.IP)
+			return
+		}
+
+		fmt.Println(hsr)
 	}
-
-	return nil
 
 }
 
@@ -76,7 +90,7 @@ func (t *Torrent) Parse(loc string) (Downloadable, error){
 	}
 
 	//utils file
-	if err := download.Download(loc); err != nil {
+	if err := utils.DownTorFile(loc); err != nil {
 		log.Printf("error downloading file: %s", err.Error())
 		return nil, err
 	}

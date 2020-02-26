@@ -13,7 +13,7 @@ func TestUnmarshal(t *testing.T) {
 	peers, err := Unmarshal(ps)
 
 	is.NoErr(err)
-	is.True(len(peers) == 13)
+	is.True(len(peers) > 0)
 }
 
 func TestUnmarshalWithEmptyInput(t *testing.T) {
