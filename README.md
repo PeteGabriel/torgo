@@ -1,3 +1,6 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/PeteGabriel/torgo)](https://goreportcard.com/report/github.com/PeteGabriel/torgo)
+
+
 # torgo
 
 ## Golang package to download from a magnet link
