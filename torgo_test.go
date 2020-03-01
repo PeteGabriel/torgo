@@ -89,3 +89,11 @@ func TestParseMagnetUri(t *testing.T) {
 	is.Equal(mag.Seed, "https://webtorrent.io/torrents/")
 	is.Equal(mag.Hash, "c9e15763f722f23e98a29decdfae341b98d53056")
 }
+
+func TestD(t *testing.T){
+	tt, _ := Parse("./resources/debian.torrent")
+
+	tor := tt.(*Torrent)
+	tor.Download()
+
+}

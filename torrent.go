@@ -5,9 +5,9 @@ import (
 	"crypto/rand"
 	"crypto/sha1"
 	"fmt"
+	"github.com/petegabriel/torgo/bittorrent"
 	"io"
 	"log"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -16,14 +16,11 @@ import (
 	"time"
 
 	"github.com/jackpal/bencode-go"
-	"github.com/petegabriel/torgo/bittorrent"
 	"github.com/petegabriel/torgo/peers"
 	"github.com/petegabriel/torgo/utils"
 )
 
-
 const Port = 6881
-
 
 func (t *Torrent) Download() error {
 	var peerId [20]byte
@@ -41,51 +38,33 @@ func (t *Torrent) Download() error {
 	t.Peers = peers
 	t.PeerID = peerId[:]
 
-	t.downloadFromPeers()
+	for _, p := range t.Peers  {
+		c, err := bittorrent.Dial(p)
+		if err != nil {
+			log.Print(err.Error())
+			continue
+		}
+
+		hs, err := c.DoHandshake(t.InfoHash[:], t.PeerID)
+		if err != nil {
+			log.Print(err.Error())
+			continue
+		}
+
+
+	}
 
 	return nil
 }
 
-/**
-1. Start a TCP connection with the peer
-2. Complete a two-way BitTorrent handshake
-3. Ask to utils pieces
- */
-func (t *Torrent) downloadFromPeers() {
 
-	for _, p := range t.Peers{
-		con, err := net.DialTimeout("tcp", p.String(), 5*time.Second)
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-		if con != nil {
-			defer con.Close()
-		}
 
-		hs := bittorrent.NewHandshake(t.InfoHash[:], t.PeerID)
-		_, err = con.Write(hs.Serialize())
-		if err != nil {
-			log.Printf("Could not handshake with %s. Disconnecting\n", p.IP)
-			return
-		}
-
-		hsr, err := bittorrent.Deserialize(con)
-		if err != nil {
-			log.Printf("Could not handshake with %s. Disconnecting\n", p.IP)
-			return
-		}
-
-		fmt.Println(hsr)
-	}
-
-}
-
-func (t *Torrent) Parse(loc string) (Downloadable, error){
+func (t *Torrent) Parse(loc string) (Downloadable, error) {
 	//Check if file exists locally
 	f, err := os.Open(loc)
 	if err != nil {
 		log.Print("File not found locally.")
-	}else {
+	} else {
 		return t.parseReader(f)
 	}
 
@@ -169,7 +148,6 @@ func (*Torrent) parseReader(r io.Reader) (*Torrent, error) {
 
 	return t.toTorrentFile()
 }
-
 
 //Torrent represents the info present in  a.torrent file
 type Torrent struct {
