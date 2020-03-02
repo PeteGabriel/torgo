@@ -2,10 +2,8 @@ package torgo
 
 import (
 	"bytes"
-	"crypto/rand"
 	"crypto/sha1"
 	"fmt"
-	"github.com/petegabriel/torgo/bittorrent"
 	"io"
 	"log"
 	"net/http"
@@ -22,50 +20,13 @@ import (
 
 const Port = 6881
 
-func (t *Torrent) Download() error {
-	var peerId [20]byte
-	_, err := rand.Read(peerId[:])
-	if err != nil {
-		return err
-	}
-
-	peers, err := t.requestPeers(peerId[:])
-	if err != nil {
-		fmt.Println("Cannot request peers ")
-		return err
-	}
-
-	t.Peers = peers
-	t.PeerID = peerId[:]
-
-	for _, p := range t.Peers  {
-		c, err := bittorrent.Dial(p)
-		if err != nil {
-			log.Print(err.Error())
-			continue
-		}
-
-		hs, err := c.DoHandshake(t.InfoHash[:], t.PeerID)
-		if err != nil {
-			log.Print(err.Error())
-			continue
-		}
-
-
-	}
-
-	return nil
-}
-
-
-
-func (t *Torrent) Parse(loc string) (Downloadable, error) {
+func ParseTor(loc string) (*Torrent, error) {
 	//Check if file exists locally
 	f, err := os.Open(loc)
 	if err != nil {
 		log.Print("File not found locally.")
 	} else {
-		return t.parseReader(f)
+		return parseReader(f)
 	}
 
 	//utils file
@@ -89,12 +50,12 @@ func (t *Torrent) Parse(loc string) (Downloadable, error) {
 		log.Printf("error opening file: %s", err.Error())
 		return nil, err
 	}
-	return t.parseReader(f)
+	return parseReader(f)
 }
 
-func (t *Torrent) requestPeers(peerId []byte) ([]peers.Peer, error) {
+func (t *Torrent) RequestPeers(peerID []byte) ([]peers.Peer, error) {
 
-	tu, err := t.getUrlTracker(peerId[:], Port)
+	tu, err := t.getUrlTracker(peerID[:], Port)
 	if err != nil {
 		fmt.Print(err.Error())
 		return nil, err
@@ -117,7 +78,7 @@ func (t *Torrent) requestPeers(peerId []byte) ([]peers.Peer, error) {
 }
 
 //peerId identifies us when meeting the tracker.
-func (t *Torrent) getUrlTracker(peerId []byte, port int) (string, error) {
+func (t *Torrent) getUrlTracker(peerID []byte, port int) (string, error) {
 	u, err := url.Parse(t.Announce)
 	if err != nil {
 
@@ -126,7 +87,7 @@ func (t *Torrent) getUrlTracker(peerId []byte, port int) (string, error) {
 	//extra query params
 	params := url.Values{
 		"info_hash":  []string{string(t.InfoHash[:])},
-		"peer_id":    []string{string(peerId[:])},
+		"peer_id":    []string{string(peerID[:])},
 		"port":       []string{strconv.Itoa(int(port))},
 		"uploaded":   []string{"0"},
 		"downloaded": []string{"0"},
@@ -139,7 +100,7 @@ func (t *Torrent) getUrlTracker(peerId []byte, port int) (string, error) {
 }
 
 //Parse a .torrent file
-func (*Torrent) parseReader(r io.Reader) (*Torrent, error) {
+func parseReader(r io.Reader) (*Torrent, error) {
 	t := &tor{}
 	err := bencode.Unmarshal(r, &t)
 	if err != nil {

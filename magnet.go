@@ -9,20 +9,22 @@ import (
 )
 
 const (
+	//Display Name is a filename to display to the user, for convenience
 	DisplayName = "dn"
+	//Exact Topic is a URN containing file hash
 	ExactTopic  = "xt"
+	//Exact Source is a P2P link identified by a content-hash
 	ExactSource = "xs"
+	//Tracker URL address for Bittorrent downloads
 	Tracker     = "tr"
+	//Web seed is the payload data served over https
 	WebSeed     = "ws"
+	//Exact length is the size in bytes
 	ExactLength = "xl"
 )
 
-func (t *Magnet) Download() error {
-	return nil
-}
-
 //Parse a magnet uri into a magnet struct
-func (m *Magnet) Parse(uri string) (*Magnet, error) {
+func ParseMagnet(uri string) (*Magnet, error) {
 
 	suf := "magnet:?"
 	if !strings.Contains(uri, suf) {
@@ -50,18 +52,19 @@ func (m *Magnet) Parse(uri string) (*Magnet, error) {
 			parts[tmp[0]] = decode(tmp[1])
 		}
 	}
-
 	//parse TR links
-	m.Origin = uri
-	m.Xt = parts[ExactTopic]
-	m.DisplayName = parts[DisplayName]
-	m.Trackers = trs
-	m.Source = parts[ExactSource]
-	m.Hash = h
-	m.Seed = parts[WebSeed]
-	m.Size = convert(parts[ExactLength])
+	m := Magnet{
+		Origin: uri,
+		Xt: parts[ExactTopic],
+		DisplayName: parts[DisplayName],
+		Trackers: trs,
+		Source: parts[ExactSource],
+		Hash: h,
+		Seed: parts[WebSeed],
+		Size: convert(parts[ExactLength]),
+	}
 
-	return m, nil
+	return &m, nil
 }
 
 func decode(src string) string {

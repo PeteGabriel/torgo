@@ -27,7 +27,7 @@ func Dial(p peers.Peer) (*PeerConnection, error){
 	}, nil
 }
 
-//Complete a two-way BitTorrent handshake
+//DoHandshake completes a two-way BitTorrent handshake
 func (c *PeerConnection) DoHandshake(ih , pid []byte) (*Handshake, error) {
 
 	hs := NewHandshake(ih, pid)

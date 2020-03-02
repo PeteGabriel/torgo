@@ -29,7 +29,6 @@ func TestParseTorrentFile(t *testing.T) {
 	is.Equal(tor.Length, 150932)
 }
 
-
 func TestParseTorrentUri(t *testing.T) {
 	is := is.New(t)
 	tt, err := Parse(torrent)
@@ -94,6 +93,6 @@ func TestD(t *testing.T){
 	tt, _ := Parse("./resources/debian.torrent")
 
 	tor := tt.(*Torrent)
-	tor.Download()
+	Download(tor, "")
 
 }
