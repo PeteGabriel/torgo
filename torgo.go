@@ -2,22 +2,20 @@ package torgo
 
 import (
 	"crypto/rand"
-	"fmt"
+	"github.com/petegabriel/torgo/bittorrent"
 	"log"
 	"strings"
 	"sync"
 
-	"github.com/petegabriel/torgo/bittorrent"
 	"github.com/petegabriel/torgo/peers"
 )
-
 
 /**
 Download the given torrent.
 */
 func Download(t interface{}, path string) (bool, error) {
-    //ignore magnet uris for now
-	tor := t.(Torrent)
+	//ignore magnet uris for now
+	tor := t.(*Torrent)
 
 	peerID, err := genPeerID()
 	if err != nil {
@@ -26,7 +24,7 @@ func Download(t interface{}, path string) (bool, error) {
 
 	prs, err := tor.RequestPeers(peerID[:])
 	if err != nil {
-		fmt.Println("Cannot request peers ")
+		log.Println("Cannot request peers ")
 		return false, err
 	}
 
@@ -34,17 +32,23 @@ func Download(t interface{}, path string) (bool, error) {
 	tor.Peers = prs
 	tor.PeerID = peerID[:]
 
-	pieces := make(chan *Piece)
-	results := make(chan *Result)
+	pieces := make(chan Piece, len(tor.Peers))
+	results := make(chan Result)
 	var wg sync.WaitGroup
 
-	for _, p := range tor.Peers {
+	for idx, p := range tor.Peers {
+		pieces <- Piece{
+			index:  idx,
+			length: tor.PieceLength,
+			hash:   tor.PieceHashes[idx],
+		}
+
 		wg.Add(1)
-		pieces <- &Piece{}
 
 		//start a worker
-		go startDownloadWorker(wg, p, tor, pieces, results)
+		go startDownloadWorker(&wg, p, tor, pieces, results)
 	}
+
 
 	//closer goroutine
 	go func() {
@@ -52,36 +56,42 @@ func Download(t interface{}, path string) (bool, error) {
 		close(results)
 	}()
 
-	for range results {
+	for r := range results {
 		//TODO do something with the result pieces
+		log.Printf("Result number %d has arrived\n", r.index)
 	}
-
 
 	return false, nil
 }
 
-func startDownloadWorker(wg sync.WaitGroup, p peers.Peer, tor Torrent, pieces chan *Piece, res chan *Result){
+func startDownloadWorker(wg *sync.WaitGroup, p peers.Peer, tor *Torrent, pieces chan Piece, res chan Result) {
 	defer wg.Done()
 
+	//connect to peer
 	c, err := bittorrent.Dial(p)
 	if err != nil {
-		log.Print(err.Error())
+		log.Println(err.Error())
 		return
 	}
-
+	//perform handshake
 	_, err = c.DoHandshake(tor.InfoHash[:], tor.PeerID)
 	if err != nil {
-		log.Print(err.Error())
+		log.Println(err.Error())
 		return
 	}
+	//send unchoke sign
+	c.SendUnchoke()
+	//send interested sign
+	c.SendInterested()
 
-	//TODO continue implementation
-
-	//1 get a piece
+	//get a piece
 	piece := <-pieces
+
 	//2 TODO process
 	//3 notify progress
-	res <- &Result{}
+	res <- Result{
+		index: piece.index,
+	}
 }
 
 func genPeerID() ([20]byte, error) {
@@ -96,11 +106,11 @@ func genPeerID() ([20]byte, error) {
 /**
 Parse a magnet link or a .torrent file.
 The .torrent file can be via url or a local file.
- */
+*/
 func Parse(loc string) (interface{}, error) {
 	suf := "magnet:?"
 	if strings.Contains(loc, suf) {
-		m , err :=  ParseMagnet(loc)
+		m, err := ParseMagnet(loc)
 		if err != nil {
 			log.Print(err.Error())
 		}
@@ -115,9 +125,6 @@ func Parse(loc string) (interface{}, error) {
 	return d, err
 }
 
-
-
-
 //Parselable represents a type that can perform the parse operation
 type Parselable interface {
 	Parse(loc string) (interface{}, error)
@@ -125,13 +132,13 @@ type Parselable interface {
 
 //Piece represents some part to be download
 type Piece struct {
-	index int
-	hash [20]byte
+	index  int
+	hash   [20]byte
 	length int
 }
 
 //Piece represents some part that was downloaded
 type Result struct {
 	index int
-	buf []byte
+	buf   []byte
 }

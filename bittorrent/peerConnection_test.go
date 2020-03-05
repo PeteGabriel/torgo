@@ -19,7 +19,7 @@ func newPeer() *peers.Peer {
 		log.Fatal(err)
 	}
 
-	if len(ips) >= 1{
+	if len(ips) >= 1 {
 		p.IP = ips[0]
 	}
 	return &p
@@ -34,20 +34,18 @@ func TestDial(t *testing.T) {
 	is.True(c != nil)
 }
 
-/*
-func TestPeerConnection_DoHandshake(t *testing.T) {
+func TestPeerConnection_Unchoke(t *testing.T) {
 	is := is2.New(t)
-	var ih []byte
-	var pid []byte
 
-	c, err := Dial(*newPeer())
+	c, _ := Dial(*newPeer())
+	err := c.Unchoke()
 	is.NoErr(err)
-
-	hs, err := c.DoHandshake(ih, pid)
-	is.NoErr(err)
-
-	is.Equal(hs.InfoHash, ih)
-	is.Equal(hs.PeerID, pid)
-	is.Equal(hs.Pstr, "BitTorrent protocol")
 }
- */
+
+func TestPeerConnection_Interested(t *testing.T) {
+	is := is2.New(t)
+
+	c, _ := Dial(*newPeer())
+	err := c.Interested()
+	is.NoErr(err)
+}

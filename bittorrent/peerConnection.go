@@ -2,6 +2,7 @@ package bittorrent
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"github.com/petegabriel/torgo/peers"
 	"log"
@@ -50,4 +51,19 @@ func (c *PeerConnection) DoHandshake(ih , pid []byte) (*Handshake, error) {
 	return hsr, nil
 }
 
+/*
+Unchoke peer.
+Choking is a temporary refusal to upload. It is
+one of BitTorrent’s most powerful idea to deal
+with those who only download but
+never upload.
+ */
+func (c *PeerConnection) Unchoke() error {
 
+	return errors.New("not implemented")
+}
+
+//Interested in obtaining pieces of a file the peer has
+func (c *PeerConnection) Interested() error {
+	return errors.New("not implemented")
+}

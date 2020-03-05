@@ -61,8 +61,9 @@ func (t *Torrent) RequestPeers(peerID []byte) ([]peers.Peer, error) {
 		return nil, err
 	}
 
-	c := &http.Client{Timeout: 15 * time.Second}
+	c := &http.Client{Timeout: 3 * time.Second}
 	resp, err := c.Get(tu)
+
 	if err != nil {
 		return nil, err
 	}
