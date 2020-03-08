@@ -21,6 +21,8 @@ port 				0003 9 <listen-port>
 */
 package bittorrent
 
+import "encoding/binary"
+
 const (
 	KeepAliveID = 0
 	ChokeID = 0
@@ -35,16 +37,31 @@ const (
 	portID = 9
 )
 
-//Message represents a message sent from client to peer
-type Message struct {
-	lenPrefix int32
-	mID int
+// Serialize a message
+func (m *Message) Serialize() []byte {
+	buf := make([]byte, 5)
+	idx := 0
+	idx += copy(buf[idx:], m.lenPrefix)
+	idx += copy(buf[idx:], []byte{byte(m.mID)})
+	return buf
 }
 
-//New message
-func New(id int, pref int32) *Message {
+func NewUnchokeMessage() *Message {
+	a := make([]byte, 4)
+	binary.BigEndian.PutUint32(a, 1)
+	return new(UnchokeID, a[:4])
+}
+
+//Message represents a message sent from client to peer
+type Message struct {
+	lenPrefix []byte
+	mID       int
+}
+
+// NewMessage creates a new message representation
+func new(id int, pref []byte) *Message {
 	return &Message{
-		lenPrefix: pref,
+		lenPrefix: pref[:4],
 		mID:       id,
 	}
 }
