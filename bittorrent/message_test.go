@@ -8,8 +8,8 @@ import (
 func TestNewUnchokeMessage(t *testing.T) {
 	is := is2.New(t)
 	m := NewUnchokeMessage()
-	is.Equal(m.mID, 1)
-	is.True(len(m.lenPrefix) == 4)
+	is.Equal(m.ID, 1)
+	is.True(len(m.Payload) == 4)
 }
 func TestMessage_Serialize(t *testing.T) {
 	is := is2.New(t)
@@ -17,7 +17,7 @@ func TestMessage_Serialize(t *testing.T) {
 	m := NewUnchokeMessage()
 	is.True(m != nil)
 
-	s := m.Serialize()
+	s := m.SerializeMsg()
 	is.True(s != nil)
 	is.True(len(s) == 5)
 

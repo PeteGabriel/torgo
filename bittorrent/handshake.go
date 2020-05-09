@@ -6,7 +6,7 @@ import (
 )
 
 /**
-Serialize the handshake structure into an array of bytes.
+SerializeMsg the handshake structure into an array of bytes.
 
 1. The length of the protocol identifier, which is always 19              -> 1 byte
 2. The name of the protocol (BitTorrent protocol)
